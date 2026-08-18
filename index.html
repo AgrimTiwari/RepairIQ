@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RepairIQ — Repair Smarter</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f7fb;color:#172033}
+.app{max-width:1100px;margin:auto;min-height:100vh;background:#fff;box-shadow:0 0 35px #00000012}
+header{padding:20px 28px;border-bottom:1px solid #e8edf4;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:900;letter-spacing:-1px}.logo span{color:#22a06b}
+.badge{background:#e9f8f1;color:#178052;padding:7px 11px;border-radius:20px;font-size:12px;font-weight:800}
+main{padding:34px 28px 55px}.screen{display:none}.screen.active{display:block}
+.hero{padding:28px;border-radius:24px;background:linear-gradient(135deg,#0d2431,#176c56);color:#fff;margin-bottom:25px}
+.hero h1{font-size:42px;line-height:1;margin:10px 0}.hero p{color:#d7eee6;max-width:620px}
+button{border:0;border-radius:13px;padding:13px 18px;font-weight:800;cursor:pointer;font-size:14px}
+.primary{background:#22a06b;color:#fff}.secondary{background:#edf2f6;color:#263545}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{padding:22px;border:1px solid #e5eaf0;border-radius:18px;background:#fff}.card h3{margin:9px 0}.icon{font-size:30px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.device{padding:20px;border:2px solid #e5eaf0;border-radius:17px;text-align:left;background:#fff}.device:hover,.device.selected{border-color:#22a06b;background:#f1fbf6}
+label{display:block;font-weight:800;margin:18px 0 8px}textarea,select,input{width:100%;padding:14px;border:1px solid #dbe2e9;border-radius:12px;font:inherit}
+.actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}.back{margin-bottom:18px}
+.result{border:1px solid #dce8e2;border-radius:20px;padding:24px;background:#f7fcfa}.result h2{margin-top:4px}.confidence{height:9px;background:#dfe9e4;border-radius:20px;overflow:hidden}.confidence div{width:82%;height:100%;background:#22a06b}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.stat{background:#fff;border-radius:15px;padding:16px;border:1px solid #e3ebe7}.stat small{color:#718096}.stat strong{display:block;font-size:20px;margin-top:5px}
+.step{display:flex;gap:13px;margin:15px 0;padding:14px;background:#fff;border-radius:13px;border:1px solid #e5eaf0}.num{width:28px;height:28px;border-radius:50%;background:#dff5eb;color:#178052;display:grid;place-items:center;font-weight:900;flex:none}
+.impact{font-size:34px;font-weight:900}.muted{color:#718096}.topline{display:flex;justify-content:space-between;gap:10px;align-items:center}
+footer{text-align:center;color:#8a96a3;font-size:12px;padding:18px}
+@media(max-width:700px){.cards,.grid,.statgrid{grid-template-columns:1fr}.hero h1{font-size:34px}header{padding:17px}.logo{font-size:22px}main{padding:22px 17px 40px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">Repair<span>IQ</span></div><div class="badge">BUDPRENEUR MVP</div></header>
+<main>
+
+<section id="home" class="screen active">
+<div class="hero">
+<div class="badge" style="background:#ffffff22;color:#fff">AI-POWERED REPAIR ASSISTANT</div>
+<h1>Repair smarter.<br>Replace less.</h1>
+<p>Diagnose everyday device problems, estimate repair costs and discover the smartest next step — all in one place.</p>
+<button class="primary" onclick="show('diagnose')">🔍 Diagnose a Problem</button>
+</div>
+<div class="cards">
+<div class="card"><div class="icon">🧠</div><h3>Smart Diagnosis</h3><p class="muted">Turn a simple problem description into a likely cause.</p></div>
+<div class="card"><div class="icon">💰</div><h3>Cost Estimator</h3><p class="muted">Get a quick repair-cost range before spending money.</p></div>
+<div class="card"><div class="icon">🌱</div><h3>Repair Impact</h3><p class="muted">See the money and waste you can avoid by repairing.</p></div>
+</div>
+</section>
+
+<section id="diagnose" class="screen">
+<button class="secondary back" onclick="show('home')">← Home</button>
+<h1>Diagnose your device</h1>
+<p class="muted">Choose a device and describe what is happening.</p>
+<div class="card" style="margin:18px 0;background:#f7fcfa;border-color:#dce8e2">
+  <div class="topline">
+    <div><div class="icon">📸</div><h3 style="margin:5px 0">Quick Photo Scan</h3><p class="muted" style="margin:0">Take a simple photo of the appliance. RepairIQ can use it as a visual clue for the prediction.</p></div>
+    <button class="primary" onclick="openCamera()">📷 Take Photo</button>
+  </div>
+  <div id="cameraBox" style="display:none;margin-top:16px">
+    <input id="cameraInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(event)">
+    <img id="photoPreview" alt="Appliance photo preview" style="display:none;width:100%;max-height:280px;object-fit:contain;border-radius:14px;border:1px solid #dbe5df;background:#fff">
+    <div class="actions"><button class="primary" id="photoPredict" style="display:none" onclick="predictFromPhoto()">🧠 Predict Problem</button><button class="secondary" id="retakePhoto" style="display:none" onclick="openCamera()">📸 Retake</button></div>
+  </div>
+</div>
+<div class="grid" id="devices">
+<button class="device" onclick="selectDevice(this,'Smartphone')">📱 <b>Smartphone</b><br><span class="muted">Screen, battery, charging</span></button>
+<button class="device" onclick="selectDevice(this,'Laptop')">💻 <b>Laptop</b><br><span class="muted">Power, display, performance</span></button>
+<button class="device" onclick="selectDevice(this,'Tablet')">📲 <b>Tablet</b><br><span class="muted">Screen, charging, apps</span></button>
+<button class="device" onclick="selectDevice(this,'Desktop PC')">🖥️ <b>Desktop PC</b><br><span class="muted">Boot, display, performance</span></button>
+<button class="device" onclick="selectDevice(this,'TV')">📺 <b>TV</b><br><span class="muted">Display, sound, power</span></button>
+<button class="device" onclick="selectDevice(this,'Wi-Fi Router')">📡 <b>Wi-Fi Router</b><br><span class="muted">Internet, signal, connection</span></button>
+<button class="device" onclick="selectDevice(this,'Printer')">🖨️ <b>Printer</b><br><span class="muted">Paper, ink, connectivity</span></button>
+<button class="device" onclick="selectDevice(this,'Game Console')">🎮 <b>Game Console</b><br><span class="muted">Power, display, controller</span></button>
+<button class="device" onclick="selectDevice(this,'Headphones')">🎧 <b>Headphones</b><br><span class="muted">Audio, Bluetooth, battery</span></button>
+<button class="device" onclick="selectDevice(this,'Bluetooth Speaker')">🔊 <b>Bluetooth Speaker</b><br><span class="muted">Sound, pairing, charging</span></button>
+<button class="device" onclick="selectDevice(this,'Smartwatch')">⌚ <b>Smartwatch</b><br><span class="muted">Battery, screen, pairing</span></button>
+<button class="device" onclick="selectDevice(this,'Air Conditioner')">❄️ <b>Air Conditioner</b><br><span class="muted">Cooling, airflow, remote</span></button>
+<button class="device" onclick="selectDevice(this,'Microwave')">♨️ <b>Microwave</b><br><span class="muted">Heating, power, display</span></button>
+<button class="device" onclick="selectDevice(this,'Air Cooler')">💨 <b>Air Cooler</b><br><span class="muted">Cooling, pump, airflow</span></button>
+<button class="device" onclick="selectDevice(this,'Water Purifier')">🚰 <b>Water Purifier</b><br><span class="muted">Water flow, filter, leakage</span></button>
+<button class="device" onclick="selectDevice(this,'Electric Kettle')">🫖 <b>Electric Kettle</b><br><span class="muted">Heating, power, switch</span></button>
+<button class="device" onclick="selectDevice(this,'Induction Cooktop')">🍳 <b>Induction Cooktop</b><br><span class="muted">Heating, cookware, display</span></button>
+<button class="device" onclick="selectDevice(this,'Refrigerator')">🧊 <b>Refrigerator</b><br><span class="muted">Cooling, noise, leakage</span></button>
+<button class="device" onclick="selectDevice(this,'Washing Machine')">🌀 <b>Washing Machine</b><br><span class="muted">Water, spin, drainage</span></button>
+<button class="device" onclick="selectDevice(this,'Dishwasher')">🍽️ <b>Dishwasher</b><br><span class="muted">Water, cleaning, drainage</span></button>
+<button class="device" onclick="selectDevice(this,'Vacuum Cleaner')">🧹 <b>Vacuum Cleaner</b><br><span class="muted">Suction, brush, power</span></button>
+<button class="device" onclick="selectDevice(this,'Ceiling Fan')">🌀 <b>Ceiling Fan</b><br><span class="muted">Speed, noise, power</span></button>
+<button class="device" onclick="selectDevice(this,'Water Heater')">🚿 <b>Water Heater</b><br><span class="muted">Heating, water, controls</span></button>
+<button class="device" onclick="selectDevice(this,'Other Device')">🔧 <b>Other Device</b><br><span class="muted">Describe any problem</span></button>
+</div>
+<label>What is the problem?</label>
+<textarea id="problem" rows="5" placeholder="Example: My washing machine turns on but doesn't fill with water."></textarea>
+<div class="actions"><button class="primary" onclick="diagnose()">⚡ Diagnose with RepairIQ</button><button class="secondary" onclick="fillExample()">Try an example</button></div>
+<p id="error" style="color:#c0392b;font-weight:700"></p>
+</section>
+
+<section id="result" class="screen">
+<button class="secondary back" onclick="show('diagnose')">← New diagnosis</button>
+<div class="topline"><div><div class="badge">DIAGNOSIS COMPLETE</div><h1 id="resultTitle">Likely issue</h1></div><div style="font-size:38px">🧠</div></div>
+<div class="result">
+<h2 id="cause"></h2><p id="explain" class="muted"></p>
+<label style="margin-top:20px">Confidence — <span id="confidenceText">82%</span></label>
+<div class="confidence"><div id="confidenceBar"></div></div>
+<div class="statgrid">
+<div class="stat"><small>Estimated repair</small><strong id="cost">₹300–₹1,200</strong></div>
+<div class="stat"><small>Difficulty</small><strong id="difficulty">🟢 Basic</strong></div>
+<div class="stat"><small>Potential saving</small><strong id="saving">₹4,000+</strong></div>
+</div>
+<button class="primary" onclick="show('plan')">View Repair Plan →</button>
+</div>
+</section>
+
+<section id="plan" class="screen">
+<button class="secondary back" onclick="show('result')">← Diagnosis</button>
+<div class="badge">REPAIRIQ SAFE PLAN</div>
+<h1>Recommended next steps</h1>
+<p class="muted">These are basic checks. If the problem involves electricity, internal parts or anything unsafe, stop and contact a qualified adult/technician.</p>
+<div id="steps"></div>
+<div class="actions"><button class="primary" onclick="show('impact')">See My Impact 🌱</button><button class="secondary" onclick="show('home')">Finish</button></div>
+</section>
+
+<section id="impact" class="screen">
+<button class="secondary back" onclick="show('home')">← Home</button>
+<div class="hero">
+<div class="badge" style="background:#ffffff22;color:#fff">YOUR REPAIR IMPACT</div>
+<h1>Repair. Reuse.<br>Make an impact.</h1>
+<p>Every successful repair can keep a useful product in service longer and avoid an unnecessary replacement.</p>
+</div>
+<div class="cards">
+<div class="card"><div class="impact" id="impactSaving">₹4,000+</div><div class="muted">Potential money saved</div></div>
+<div class="card"><div class="impact">1</div><div class="muted">Device kept in use</div></div>
+<div class="card"><div class="impact">🌱</div><div class="muted">Replacement waste avoided</div></div>
+</div>
+<br><button class="primary" onclick="show('diagnose')">Diagnose another device →</button>
+</section>
+
+</main>
+<footer>RepairIQ • Prototype for BUDPRENEUR • Demo version</footer>
+</div>
+
+<script>
+let device="", current={};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function selectDevice(el,name){device=name;document.querySelectorAll('.device').forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}
+function fillExample(){device='Washing Machine';document.querySelectorAll('.device').forEach(x=>x.classList.remove('selected'));document.querySelectorAll('.device')[2].classList.add('selected');document.getElementById('problem').value="My washing machine turns on but doesn't fill with water."}
+function openCamera(){
+  if(!device){document.getElementById('error').textContent="Please choose a device first.";return}
+  document.getElementById('error').textContent="";
+  document.getElementById('cameraBox').style.display='block';
+  document.getElementById('cameraInput').click();
+}
+function previewPhoto(e){
+  const file=e.target.files && e.target.files[0];
+  if(!file)return;
+  const img=document.getElementById('photoPreview');
+  img.src=URL.createObjectURL(file);
+  img.style.display='block';
+  document.getElementById('photoPredict').style.display='inline-block';
+  document.getElementById('retakePhoto').style.display='inline-block';
+}
+function predictFromPhoto(){
+  const p="Photo scan: visible appliance condition";
+  current=makeDiagnosis(device,p);
+  current.explain="RepairIQ used the appliance photo as a visual clue and generated a prototype prediction. A real production version would use computer vision for deeper analysis.";
+  renderResult();
+  show('result');
+}
+function diagnose(){
+const p=document.getElementById('problem').value.trim().toLowerCase(), err=document.getElementById('error');
+if(!device){err.textContent="Please choose a device first.";return} if(!p){err.textContent="Please describe the problem.";return} err.textContent="";
+current=makeDiagnosis(device,p);renderResult();show('result')
+}
+function makeDiagnosis(d,p){
+if(d==="Washing Machine" && /fill|water|inlet|supply/.test(p)) return {cause:"Water inlet / supply problem",explain:"The symptoms match a possible water-supply, inlet-hose or inlet-valve issue.",conf:82,cost:"₹300–₹1,200",diff:"🟢 Basic check",saving:"₹4,000+",steps:["Check that the water tap is fully open.","Look for a kinked or blocked inlet hose.","Check the visible inlet filter for blockage.","If the machine still does not fill, ask a qualified technician to inspect it."]};
+if(d==="Smartphone" && /charge|charging|charger|battery/.test(p)) return {cause:"Charging path problem",explain:"The issue may be related to the cable, adapter, charging port or battery.",conf:78,cost:"₹200–₹1,500",diff:"🟢 Basic check",saving:"₹8,000+",steps:["Try a known-good compatible cable and adapter.","Check the charging port for visible dust without inserting sharp objects.","Restart the phone and test charging again.","If it still fails, use an authorised/qualified repair service."]};
+if(d==="Laptop" && /slow|lag|hang|freeze|performance/.test(p)) return {cause:"Performance / storage issue",explain:"Low storage, background processes or an ageing drive can contribute to slow performance.",conf:75,cost:"₹0–₹3,500",diff:"🟡 Moderate",saving:"₹20,000+",steps:["Check available storage space.","Close unnecessary background applications.","Restart and check whether the issue repeats.","Back up important files before any hardware repair."]};
+if(d==="Refrigerator" && /cool|cold|warm|cooling/.test(p)) return {cause:"Cooling performance issue",explain:"Possible causes include airflow, door-seal or temperature-setting problems.",conf:70,cost:"₹200–₹2,500",diff:"🟡 Moderate",saving:"₹25,000+",steps:["Check the temperature setting.","Make sure air vents are not blocked by food.","Check whether the door closes and seals properly.","If cooling remains poor, contact a qualified technician."]};
+return {cause:"General issue detected",explain:"RepairIQ needs more information to narrow the cause. Start with basic external checks and avoid opening electrical equipment.",conf:62,cost:"₹300–₹2,000",diff:"🟡 Depends",saving:"₹3,000+",steps:["Check visible cables, switches and connections.","Restart the device if appropriate.","Note exactly when the problem happens.","If the issue continues, contact a qualified repair professional."]};
+}
+function renderResult(){
+document.getElementById('cause').textContent=current.cause;
+document.getElementById('explain').textContent=current.explain;
+document.getElementById('confidenceText').textContent=current.conf+"%";
+document.getElementById('confidenceBar').style.width=current.conf+"%";
+document.getElementById('cost').textContent=current.cost;
+document.getElementById('difficulty').textContent=current.diff;
+document.getElementById('saving').textContent=current.saving;
+document.getElementById('impactSaving').textContent=current.saving;
+document.getElementById('steps').innerHTML=current.steps.map((s,i)=>`<div class="step"><div class="num">${i+1}</div><div>${s}</div></div>`).join("");
+}
+</script>
+</body>
+</html>
