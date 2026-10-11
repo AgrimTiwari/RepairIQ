@@ -145,20 +145,47 @@ function choosePro(){
 }
 function closeAIDemo(){document.getElementById("aiDemo").classList.remove("show")}
 function addAIMessage(text,type){let d=document.createElement("div");d.className="ai-msg "+type;d.textContent=text;let c=document.getElementById("aiChat");c.appendChild(d);c.scrollTop=c.scrollHeight;return d}
-function sendAI(){
-  let input=document.getElementById("aiInput"), q=input.value.trim();
-  if(!q){return}
-  addAIMessage(q,"user"); input.value="";
-  let l=q.toLowerCase(), reply;
-  if(l.includes("overheat")||l.includes("hot")) reply="First, stop heavy use and unplug the device if it is charging. Let it cool in a ventilated place. Then check whether a particular app or charging accessory is causing the heat. If it stays unusually hot, get it checked by a qualified technician.";
-  else if(l.includes("battery")||l.includes("drain")) reply="Check battery usage to find apps consuming unusual power, reduce unnecessary background activity, and make sure the device software is updated. If the battery still drains unusually fast, its battery health may need professional inspection.";
-  else if(l.includes("charge")||l.includes("charging")) reply="Try a known-good compatible cable and power adapter, then check the charging port for visible debris or damage. If the device still does not charge, professional inspection is the safest next step.";
-  else if(l.includes("screen")||l.includes("display")) reply="Restart the device and check brightness and display settings. If there is physical damage, lines, flickering, or no display after restart, avoid opening the device yourself and use a qualified repair professional.";
-  else if(l.includes("slow")||l.includes("lag")) reply="Check available storage, close unnecessary background apps, and install pending system updates. If the slowdown continues, RepairIQ can help narrow down whether storage, software, or hardware is involved.";
-  else if(l.includes("wifi")||l.includes("bluetooth")||l.includes("connect")) reply="Toggle the connection off and on, restart the device, and test with another network or device. If only one accessory or network fails, the problem may be on that side.";
-  else reply="I can help narrow that down. Tell me the device/model, the exact symptom, and when the problem started. Then I can suggest the most relevant troubleshooting steps.";
-  setTimeout(()=>{addAIMessage(reply,"bot");speakText("RepairIQ AI says: "+reply)},350);
+
+async function sendAI() {
+  const input = document.getElementById("aiInput");
+  const q = input.value.trim();
+
+  if (!q) return;
+
+  addAIMessage(q, "user");
+  input.value = "";
+
+  const loading = addAIMessage("RepairIQ is thinking... ⚡", "bot");
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: q })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI service unavailable");
+    }
+
+    if (!data.answer || typeof data.answer !== "string") {
+      throw new Error("No answer received");
+    }
+
+    loading.textContent = data.answer;
+    speakText("RepairIQ AI says: " + data.answer);
+
+  } catch (error) {
+    loading.textContent =
+      "RepairIQ couldn't connect to its AI service. Please try again.";
+    console.error("RepairIQ error:", error);
+  }
 }
+  
 function speakAI(){let msgs=[...document.querySelectorAll("#aiChat .ai-msg.bot")];if(msgs.length){speakText(msgs[msgs.length-1].textContent)}}
 </script>
 </body>
