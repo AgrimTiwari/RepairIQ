@@ -36,14 +36,20 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    
+const errorInfo = data.error || {};
 
-    if (!response.ok) {
-      console.error("OpenAI request failed:", response.status);
-      return res.status(502).json({
-        error: "RepairIQ AI is temporarily unavailable."
-      });
-    }
+console.error("OpenAI request failed:", JSON.stringify({
+  status: response.status,
+  type: errorInfo.type || null,
+  code: errorInfo.code || null,
+  message: errorInfo.message || "No error message returned"
+}));
+
+return res.status(502).json({
+  error: "RepairIQ AI is temporarily unavailable."
+});
+    
 
     const answer = (data.output || [])
       .flatMap(item => item.content || [])
